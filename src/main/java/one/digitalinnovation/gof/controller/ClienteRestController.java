@@ -1,15 +1,9 @@
 package one.digitalinnovation.gof.controller;
 
+import one.digitalinnovation.gof.model.CpfRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import one.digitalinnovation.gof.model.Cliente;
 import one.digitalinnovation.gof.service.ClienteService;
@@ -22,22 +16,42 @@ import one.digitalinnovation.gof.service.ClienteService;
  * @author falvojr
  */
 @RestController
-@RequestMapping("clientes")
+@RequestMapping("/clientes")
 public class ClienteRestController {
 
 	@Autowired
 	private ClienteService clienteService;
+
+	@Autowired
+	private CpfRepository cpfRepository;
 
 	@GetMapping
 	public ResponseEntity<Iterable<Cliente>> buscarTodos() {
 		return ResponseEntity.ok(clienteService.buscarTodos());
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<Cliente> buscarPorId(@PathVariable Long id) {
-		return ResponseEntity.ok(clienteService.buscarPorId(id));
+	/**
+	* O Metodo buscarPorIdOuCpf retorna dados do cliente passando id ou CPF.
+	* O CPF precisa conter caracteres separadores dos digitos
+	* para se caracterizar como uma String!
+	*
+	* @author Lucas-Severo96
+	*/
+	@GetMapping("/{idOuCpf}")
+	public ResponseEntity<Cliente> buscarPorIdOuCpf(@PathVariable String idOuCpf) {
+		try {
+			// Tenta converter o valor para Long (indicando uma busca por ID)
+			Long id = Long.parseLong(idOuCpf);
+			return ResponseEntity.ok(clienteService.buscarPorId(id));
+		} catch (NumberFormatException e) {
+			// Se ocorrer exceção, então o valor é CPF
+			return clienteService.buscarPorCpf(idOuCpf)
+					.map(ResponseEntity::ok)
+					.orElse(ResponseEntity.notFound().build());
+		}
 	}
 
+	/*Obrigatorio passar o CEP do cliente para o ViaCEP retornar as informacoes corretas*/
 	@PostMapping
 	public ResponseEntity<Cliente> inserir(@RequestBody Cliente cliente) {
 		clienteService.inserir(cliente);
@@ -55,4 +69,6 @@ public class ClienteRestController {
 		clienteService.deletar(id);
 		return ResponseEntity.ok().build();
 	}
+
+
 }

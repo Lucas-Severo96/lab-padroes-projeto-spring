@@ -1,10 +1,6 @@
 package one.digitalinnovation.gof.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
 public class Cliente {
@@ -15,6 +11,10 @@ public class Cliente {
 	private String nome;
 	@ManyToOne
 	private Endereco endereco;
+
+	//Adicionando o CPF como atributo para busca do cliente
+	private String cpf;
+
 
 	public Long getId() {
 		return id;
@@ -40,4 +40,11 @@ public class Cliente {
 		this.endereco = endereco;
 	}
 
+	public String getCpf() {
+		return cpf;
+	}
+
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
+	}
 }
